@@ -46,8 +46,8 @@ def results_to_excel(res, countries, results_path, filename):
     c_list = [i for i in countries]
     c_list.append('global')
     for i in c_list:
-        res[i].to_excel(writer, i)
-    writer.save()        
+        res[i].to_excel(excel_writer=writer, sheet_name=i)
+    writer._save()        
     
     
 def coa_f(N):

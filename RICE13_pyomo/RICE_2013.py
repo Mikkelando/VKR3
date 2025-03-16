@@ -1,4 +1,11 @@
+
+import datetime
+run_start = datetime.datetime.now()
+print('STARTED at : ' , run_start)
 import math
+
+
+
 import pandas as pd
 import pyomo.environ as pe
 from Aux_func import model_res_to_dict, output_format, results_to_excel, coa_f, \
@@ -43,7 +50,7 @@ if args.nc == 'True':
     nc_c = True
 else:
     nc_c = False
-coa_c = args.coalitions
+coa_c = args.coalition
 
 if T*tstep > 590:
     from argparse import ArgumentTypeError
@@ -98,28 +105,29 @@ slr_param = pd.read_csv(data_path+"SLR_time_variant_Param.csv", sep=';', index_c
 
 # Definition of Static Parameters (time and countries invariant)
 
-b11     = float(inv_p.loc['b11'])          # atmosphere to atmosphere (b11)
-b21     = float(inv_p.loc['b21'])          # biosphere/shallow oceans to atmosphere (b21)
-b12     = float(inv_p.loc['b12'])          # atmosphere to biosphere/shallow oceans (b12)
-b22     = float(inv_p.loc['b22'])          # biosphere/shallow oceans to biosphere/shallow oceans (b22)
-b32     = float(inv_p.loc['b32'])          # deep oceans to biosphere/shallow oceans (b32)
-b23     = float(inv_p.loc['b23'])          # biosphere/shallow oceans to deep oceans (b23)
-b33     = float(inv_p.loc['b33'])          # deep oceans to deep oceans (b33)
-c1      = float(inv_p.loc['c1'])           # Speed of adjustment parameter for atmospheric temperature
-c2      = float(inv_p.loc['c2'])           # Transfer coefficient from previous time period (upper)
-c3      = float(inv_p.loc['c3'])           # Coefficient of heat loss from atmosphere to oceans
-c4      = float(inv_p.loc['c4'])           # Coefficient of heat gain by deep oceans
-M_1900  = float(inv_p.loc['M_1900'])       # Reference concentration of CO2 (1900 level) 
-eta     = float(inv_p.loc['eta'])          # Forcings of equilibrium CO2 doubling (Wm-2) 
-t2xco2  = float(inv_p.loc['t2xco2'])       # Equilibrium temperature increase for CO2 doubling (t2xco2)
-F_ex_1  = float(inv_p.loc['F_ex_1'])       # 2000 forcings other ghg
-F_ex_2  = float(inv_p.loc['F_ex_2'])       # 2100 forcings other ghg
-T_at_05 = float(inv_p.loc['T_at_05'])      # Initial atmospheric temperature, 2005 (deg. C above 1900)
-T_at_15 = float(inv_p.loc['T_at_15'])      # Initial atmospheric temperature, 2015 (deg. C above 1900)
-T_lo_0  = float(inv_p.loc['T_lo_0'])       # Initial temperature of deep oceans (deg. C above 1900)
-M_at_0  = float(inv_p.loc['M_at_0'])       # Initial atmospheric concentration of CO2 (GTC, 2010)
-M_up_0  = float(inv_p.loc['M_up_0'])       # Initial concentration of CO2 in biosphere/shallow oceans (GTC)
-M_lo_0  = float(inv_p.loc['M_lo_0'])       # Initial concentration of CO2 in deep oceans (GTC)
+b11     = float(inv_p.loc['b11'].iloc[0])          # atmosphere to atmosphere (b11)
+b21     = float(inv_p.loc['b21'].iloc[0])          # biosphere/shallow oceans to atmosphere (b21)
+b12     = float(inv_p.loc['b12'].iloc[0])          # atmosphere to biosphere/shallow oceans (b12)
+b22     = float(inv_p.loc['b22'].iloc[0])          # biosphere/shallow oceans to biosphere/shallow oceans (b22)
+b32     = float(inv_p.loc['b32'].iloc[0])          # deep oceans to biosphere/shallow oceans (b32)
+b23     = float(inv_p.loc['b23'].iloc[0])          # biosphere/shallow oceans to deep oceans (b23)
+b33     = float(inv_p.loc['b33'].iloc[0])          # deep oceans to deep oceans (b33)
+c1      = float(inv_p.loc['c1'].iloc[0])           # Speed of adjustment parameter for atmospheric temperature
+c2      = float(inv_p.loc['c2'].iloc[0])           # Transfer coefficient from previous time period (upper)
+c3      = float(inv_p.loc['c3'].iloc[0])           # Coefficient of heat loss from atmosphere to oceans
+c4      = float(inv_p.loc['c4'].iloc[0])           # Coefficient of heat gain by deep oceans
+M_1900  = float(inv_p.loc['M_1900'].iloc[0])       # Reference concentration of CO2 (1900 level)
+eta     = float(inv_p.loc['eta'].iloc[0])          # Forcings of equilibrium CO2 doubling (Wm-2)
+t2xco2  = float(inv_p.loc['t2xco2'].iloc[0])       # Equilibrium temperature increase for CO2 doubling (t2xco2)
+F_ex_1  = float(inv_p.loc['F_ex_1'].iloc[0])       # 2000 forcings other ghg
+F_ex_2  = float(inv_p.loc['F_ex_2'].iloc[0])       # 2100 forcings other ghg
+T_at_05 = float(inv_p.loc['T_at_05'].iloc[0])      # Initial atmospheric temperature, 2005 (deg. C above 1900)
+T_at_15 = float(inv_p.loc['T_at_15'].iloc[0])      # Initial atmospheric temperature, 2015 (deg. C above 1900)
+T_lo_0  = float(inv_p.loc['T_lo_0'].iloc[0])       # Initial temperature of deep oceans (deg. C above 1900)
+M_at_0  = float(inv_p.loc['M_at_0'].iloc[0])       # Initial atmospheric concentration of CO2 (GTC, 2010)
+M_CH4_at_0  = float(inv_p.loc['M_at_0'].iloc[0])   #CH4   # Initial atmospheric concentration of CO2 (GTC, 2010)
+M_up_0  = float(inv_p.loc['M_up_0'].iloc[0])       # Initial concentration of CO2 in biosphere/shallow oceans (GTC)
+M_lo_0  = float(inv_p.loc['M_lo_0'].iloc[0])       # Initial concentration of CO2 in deep oceans (GTC)
 
  
 # Definition of Static Parameters that are Country Dependent (time invariant)
@@ -137,8 +145,10 @@ pback   = c_var_p.loc['pback']            # Price backstop technology (2005 US 0
 d_ab    = c_var_p.loc['d_ab']             # Decline of backstop price (per decade)
 th_2    = c_var_p.loc['th_2']             # Coefficient on abatement level
 E_0     = c_var_p.loc['E_0']              # CO2 emissions for 2005
+E_CH4_0     = c_var_p.loc['E_0']          #CH4     # CO2 emissions for 2005
 Sig_0   = c_var_p.loc['Sig_0']            # Initial sigma (tC per $1000 GDP US $, 2005 prices) 2005
 eland_0 = c_var_p.loc['Eland_0']          # Initial carbon emissions from land use change (GTC per year)
+e_CH4_land_0 = c_var_p.loc['Eland_0']     #CH4    # Initial carbon emissions from land use change (GTC per year)
 d_el    = c_var_p.loc['d_el']             # Decline rate of land emissions per decade
 d_sig   = c_var_p.loc['d_sig']            # Decline of growth rate of sigma (sigma = emission intensity)
 tr_sig  = c_var_p.loc['tr_sig']           # Trend of sigma (sigma = emission intensity)
@@ -159,6 +169,7 @@ A_0     = t0_v.loc['A_0']           # Calculated A (Initial)
 s_0     = t0_v.loc['s_0']           # Initial savings rate
 L_0     = t0_v.loc['L_0']           # Initial population
 E_0     = t0_v.loc['E_0']           # Initial emissions
+E_CH4_0     = t0_v.loc['E_0']       #CH4   # Initial emissions
 
 # TFP and population growth for all years (g_A(t) and g_L(t) in the equations of the paper)
 
@@ -190,7 +201,7 @@ mis_dat = [0 for i in range(len(g_L.loc['US']),60)]
 mis_g_L_dat = {i:mis_dat for i in g_L.index}
 mis_g_L = pd.DataFrame(data = mis_g_L_dat, index=mis_ind)
 
-g_L = g_L.T.append(mis_g_L, ignore_index=True).T
+g_L = g_L.T._append(mis_g_L, ignore_index=True).T
 for i in range(len(g_A.columns)):
     g_A.rename(columns={g_A.columns[i]:i}, inplace=True)
 
@@ -199,6 +210,7 @@ for i in range(len(slr_p.index)):
 
 # Population (L(i,t))
 L = pd.DataFrame(0, index=countries,columns=y_as_int)
+L = L.astype(float)
 for i in countries:
     for j in range(T):
         if j==0:
@@ -215,6 +227,7 @@ for i in countries:
         
 # TFP (A(i,t))    
 A = pd.DataFrame(0, index=countries,columns=y_as_int)
+A = A.astype(float)
 for i in countries:
     for j in range(T):
         if j==0:
@@ -232,6 +245,7 @@ for i in countries:
 # Sigma growth (GSIG(i,t))
 if tstep !=20:
     g_sig = pd.DataFrame(0, index=countries,columns=y_as_int)
+    g_sig = g_sig.astype(float)
 else:
     g_sig = pd.DataFrame(0, index=countries,columns=[i for i in range(T*2)])
 for i in countries:
@@ -245,6 +259,7 @@ for i in countries:
 
 # Sigma (SIGMA(i,t))
 sig = pd.DataFrame(0, index=countries,columns=y_as_int)
+sig = sig.astype(float)
 for i in countries:
     for j in range(T):
         if j==0:
@@ -261,6 +276,7 @@ for i in countries:
 
 # Emissions from land (ETREE(i,t)) - exogenous
 eland = pd.DataFrame(0, index=countries, columns=y_as_int)
+eland = eland.astype(float)
 for i in countries:
     for j in range(T):
         if j==0:
@@ -269,6 +285,19 @@ for i in countries:
             eland.loc[i,j] = eland.loc[i,j-1]*(1-d_el.loc[i])
         else:
             eland.loc[i,j] = eland.loc[i,j-1]*(1-d_el.loc[i]*(tstep/10))
+
+
+# CH4 Emissions from land (ETREE(i,t)) - exogenous
+e_CH4_land = pd.DataFrame(0, index=countries, columns=y_as_int)
+e_CH4_land = e_CH4_land.astype(float)
+for i in countries:
+    for j in range(T):
+        if j==0:
+            e_CH4_land.loc[i,j] = e_CH4_land_0.loc[i]
+        elif j ==1:
+            e_CH4_land.loc[i,j] = e_CH4_land.loc[i,j-1]*(1-d_el.loc[i])
+        else:
+            e_CH4_land.loc[i,j] = e_CH4_land.loc[i,j-1]*(1-d_el.loc[i]*(tstep/10))
 
 # Exogenous radiative forcing (FORCOTH(t)) 
 f_ex = pd.Series([F_ex_1+0.1*(F_ex_2-F_ex_1)*j if j<11 else F_ex_1+0.36 for j in range(T)], index=y_as_int)
@@ -287,6 +316,7 @@ if tstep != 10:
 
 # Backstop price (used to compute COST1(i,t))
 backstpr1 = pd.DataFrame(0, index=countries, columns=[i for i in range(60)])
+backstpr1 = backstpr1.astype(float)
 for i in countries:
     for j in range(60):
         if j==0:
@@ -317,9 +347,10 @@ else:
 
 # Cost coefficient for abatement (COST1(i,t)) that varies during time
 theta1 = pd.DataFrame(0, index=countries, columns=y_as_int)
+theta1 = theta1.astype(float)
 for i in countries:
     for j in range(T):
-        theta1.loc[i,j] = backstpr.loc[i,j]*sig.loc[i,j]/th_2.loc[i]
+        theta1.loc[i,j] = float(backstpr.loc[i,j])*float(sig.loc[i,j])/float(th_2.loc[i])
         
 # Investment at time 0 (I_0[i])
 I_0 = Y_0*Sig_I_t.loc[:,0]
@@ -348,6 +379,7 @@ AB_init = pd.read_csv(data_path+'AB_init.csv', sep=';', index_col=0)
 D_init = pd.read_csv(data_path+'D_init.csv', sep=';', index_col=0)
 C_init = pd.read_csv(data_path+'C_init.csv', sep=';', index_col=0)
 E_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0)
+E_CH4_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0) #CH
 oth_var = pd.read_csv(data_path+'Var_country_independent_init.csv', sep=';', index_col=0)
 
 # Keep only relevant number of time periods (max T = 59)
@@ -373,6 +405,8 @@ C_init = pd.read_csv(data_path+'C_init.csv', sep=';', index_col=0)
 C_init.columns = C_init.columns.astype(int)
 E_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0)
 E_ind_init.columns = E_ind_init.columns.astype(int)
+E_CH4_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0) #CH
+E_CH4_ind_init.columns = E_CH4_ind_init.columns.astype(int) #Ch
 oth_var = pd.read_csv(data_path+'Var_country_independent_init.csv', sep=';', index_col=0)
 oth_var.columns = oth_var.columns.astype(int)
 
@@ -390,8 +424,11 @@ if tstep == 10:
     D_init = D_init[D_init.columns[1:T+1]]
     C_init = C_init[C_init.columns[1:T+1]]
     E_ind_init = E_ind_init[E_ind_init.columns[1:T+1]]
+    E_CH4_ind_init = E_CH4_ind_init[E_CH4_ind_init.columns[1:T+1]] #CH
     E_tot_init = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[1:T+1]])
+    E_CH4_tot_init = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[1:T+1]]) #CH
     M_at_init = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[1:T+1]])
+    M_CH4_at_init = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[1:T+1]]) #CH4
     M_up_init = pd.Series(oth_var.loc['M_up'][oth_var.loc['M_up'].index[1:T+1]])
     M_lo_init = pd.Series(oth_var.loc['M_lo'][oth_var.loc['M_lo'].index[1:T+1]])
     T_at_init = pd.Series(oth_var.loc['T_at'][oth_var.loc['T_at'].index[1:T+1]])
@@ -420,10 +457,19 @@ elif tstep == 20:
     C_init.columns = col_new_ind
     E_ind_init = E_ind_init[E_ind_init.columns[col_ind]]
     E_ind_init.columns = col_new_ind
+
+    E_CH4_ind_init = E_CH4_ind_init[E_CH4_ind_init.columns[col_ind]] #CH
+    E_CH4_ind_init.columns = col_new_ind #CH
+
     E_tot_init = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[col_ind]])
     E_tot_init.index = col_new_ind
+
+    E_CH4_tot_init = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[col_ind]]) #CH
+    E_CH4_tot_init.index = col_new_ind #CH
     M_at_init = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[col_ind]])
     M_at_init.index = col_new_ind
+    M_CH4_at_init = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[col_ind]]) #CH4
+    M_CH4_at_init.index = col_new_ind #CH
     M_up_init = pd.Series(oth_var.loc['M_up'][oth_var.loc['M_up'].index[col_ind]])
     M_up_init.index = col_new_ind
     M_lo_init = pd.Series(oth_var.loc['M_lo'][oth_var.loc['M_lo'].index[col_ind]])
@@ -455,15 +501,21 @@ else:
     C_init = C_init[C_init.columns[1:T+1]]
     E_ind_init0 = E_ind_init[E_ind_init.columns[1:T+1]]
     E_ind_init = E_ind_init[E_ind_init.columns[1:T+1]]
+    E_CH4_ind_init0 = E_CH4_ind_init[E_CH4_ind_init.columns[1:T+1]] #CH4
+    E_CH4_ind_init = E_CH4_ind_init[E_CH4_ind_init.columns[1:T+1]] #CH4
     E_tot_init0 = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[1:T+1]])
+    E_CH4_tot_init0 = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[1:T+1]]) #CH
     M_at_init0 = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[1:T+1]])
+    M_CH4_at_init0 = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[1:T+1]]) #CH4
     M_up_init0 = pd.Series(oth_var.loc['M_up'][oth_var.loc['M_up'].index[1:T+1]])
     M_lo_init0 = pd.Series(oth_var.loc['M_lo'][oth_var.loc['M_lo'].index[1:T+1]])
     T_at_init0 = pd.Series(oth_var.loc['T_at'][oth_var.loc['T_at'].index[1:T+1]])
     T_lo_init0 = pd.Series(oth_var.loc['T_lo'][oth_var.loc['T_lo'].index[1:T+1]])
     F_init0 = pd.Series(oth_var.loc['F'][oth_var.loc['F'].index[1:T+1]]) 
     E_tot_init = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[1:T+1]])
+    E_CH4_tot_init = pd.Series(oth_var.loc['E_tot'][oth_var.loc['E_tot'].index[1:T+1]]) #CH
     M_at_init = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[1:T+1]])
+    M_CH4_at_init = pd.Series(oth_var.loc['M_at'][oth_var.loc['M_at'].index[1:T+1]]) #CH4
     M_up_init = pd.Series(oth_var.loc['M_up'][oth_var.loc['M_up'].index[1:T+1]])
     M_lo_init = pd.Series(oth_var.loc['M_lo'][oth_var.loc['M_lo'].index[1:T+1]])
     T_at_init = pd.Series(oth_var.loc['T_at'][oth_var.loc['T_at'].index[1:T+1]])
@@ -484,8 +536,11 @@ else:
             D_init.loc[:, (i)*n_per + j +1] = D_init0.loc[:,i+1] + j*(D_init0.loc[:,i+2] - D_init0.loc[:,i+1])/n_per
             C_init.loc[:, (i)*n_per + j +1] = C_init0.loc[:,i+1] + j*(C_init0.loc[:,i+2] - C_init0.loc[:,i+1])/n_per
             E_ind_init.loc[:, (i)*n_per + j +1] = E_ind_init0.loc[:,i+1] + j*(E_ind_init0.loc[:,i+2] - E_ind_init0.loc[:,i+1])/n_per
+            E_CH4_ind_init.loc[:, (i)*n_per + j +1] = E_CH4_ind_init0.loc[:,i+1] + j*(E_CH4_ind_init0.loc[:,i+2] - E_CH4_ind_init0.loc[:,i+1])/n_per #CH
             E_tot_init.loc[(i)*n_per + j +1] = E_tot_init0.loc[i+1] + j*(E_tot_init0.loc[i+2] - E_tot_init0.loc[i+1])/n_per
+            E_CH4_tot_init.loc[(i)*n_per + j +1] = E_CH4_tot_init0.loc[i+1] + j*(E_CH4_tot_init0.loc[i+2] - E_CH4_tot_init0.loc[i+1])/n_per #CH4
             M_at_init.loc[(i)*n_per + j +1] = M_at_init0.loc[i+1] + j*(M_at_init0.loc[i+2] - M_at_init0.loc[i+1])/n_per
+            M_CH4_at_init.loc[(i)*n_per + j +1] = M_CH4_at_init0.loc[i+1] + j*(M_CH4_at_init0.loc[i+2] - M_CH4_at_init0.loc[i+1])/n_per #CH4
             M_up_init.loc[(i)*n_per + j +1] = M_up_init0.loc[i+1] + j*(M_up_init0.loc[i+2] - M_up_init0.loc[i+1])/n_per
             M_lo_init.loc[(i)*n_per + j +1] = M_lo_init0.loc[i+1] + j*(M_lo_init0.loc[i+2] - M_lo_init0.loc[i+1])/n_per
             T_at_init.loc[(i)*n_per + j +1] = T_at_init0.loc[i+1] + j*(T_at_init0.loc[i+2] - T_at_init0.loc[i+1])/n_per
@@ -529,11 +584,20 @@ def C_init_f(m, mC, t):
 def E_ind_init_f(m, mC, t):
     return E_ind_init.loc[mC, t]
 
+def E_CH4_ind_init_f(m, mC, t): #CH
+    return E_CH4_ind_init.loc[mC, t]
+
 def E_tot_init_f(m, t):
     return E_tot_init[t]
 
+def E_CH4_tot_init_f(m, t): #CH
+    return E_CH4_tot_init[t]
+
 def M_at_init_f(m, t):
     return M_at_init[t]
+
+def M_CH4_at_init_f(m, t):
+    return M_CH4_at_init[t] #CH
 
 def M_up_init_f(m, t):
     return M_up_init[t]
@@ -563,8 +627,11 @@ m.AB = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = 
 m.D = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = D_init_f)                            # Environmental damages
 m.C = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = C_init_f)                            # Consumption
 m.E_ind = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = E_ind_init_f)                    # Industrial emissions
+m.E_CH4_ind = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = E_CH4_ind_init_f)            #CH       # Industrial emissions
 m.E_tot = pe.Var(m.t, domain=pe.NonNegativeReals, initialize = E_tot_init_f)                          # Total global emissions
+m.E_CH4_tot = pe.Var(m.t, domain=pe.NonNegativeReals, initialize = E_CH4_tot_init_f)                  #CH4       # Total global emissions
 m.M_at = pe.Var(m.t, domain=pe.Reals , bounds=(0.001, float('inf')), initialize = M_at_init_f)        # Atmospheric GHG concentration
+m.M_CH4_at = pe.Var(m.t, domain=pe.Reals , bounds=(0.001, float('inf')), initialize = M_CH4_at_init_f)        #CH4  # Atmospheric GHG concentration
 m.M_up = pe.Var(m.t, domain=pe.Reals, initialize = M_up_init_f)                                       # Ocean (upper stratum) GHG concentration
 m.M_lo = pe.Var(m.t, domain=pe.Reals, initialize = M_lo_init_f)                                       # Ocean (lower stratum) GHG concentration
 m.T_at = pe.Var(m.t, domain=pe.Reals, initialize = T_at_init_f)                                       # Atmospheric temperature (increase over normal)
@@ -629,34 +696,51 @@ def E_ind_eq(m, mC, t):
     return m.E_ind[mC, t] == sig.loc[mC, t]*((1-m.mu[mC, t])*m.Q[mC, t])
 m.E_ind_eq = pe.Constraint(m.mC, m.t, rule=E_ind_eq)
 
+def E_CH4_ind_eq(m, mC, t): #CH4
+    return m.E_CH4_ind[mC, t] == sig.loc[mC, t]*((1-m.mu[mC, t])*m.Q[mC, t])
+m.E_CH4_ind_eq = pe.Constraint(m.mC, m.t, rule=E_CH4_ind_eq)
+
 # Total emissions including emissions from LUC (summed over all countries)
 def E_tot_eq(m, t):
     return m.E_tot[t] == sum(m.E_ind[i, t] + eland.loc[i, t] for i in mC)
 m.E_tot_eq = pe.Constraint(m.t, rule=E_tot_eq)
 
+# Total CH4 emissions including emissions from LUC (summed over all countries)
+def E_CH4_tot_eq(m, t):
+    return m.E_CH4_tot[t] == sum(m.E_CH4_ind[i, t] + e_CH4_land.loc[i, t] for i in mC)
+m.E_CH4_tot_eq = pe.Constraint(m.t, rule=E_CH4_tot_eq)
+
 # Athmospheric GHG concentration
 def M_at_eq(m, t):
     if t == 1:
-        return m.M_at[t] == (sum(E_0[i] + eland_0[i] for i in m.mC))*tstep + b11*M_at_0 + b21*M_up_0
+        return m.M_at[t] == (sum(E_0[i] + eland_0[i] for i in m.mC))*tstep + b11*M_at_0 
     else:
-        return m.M_at[t] == m.E_tot[t-1]*tstep + b11*m.M_at[t-1] + b21*m.M_up[t-1]
+        return m.M_at[t] == m.E_tot[t-1]*tstep + b11*m.M_at[t-1]
 m.M_at_eq = pe.Constraint(m.t, rule=M_at_eq)
 
-# Biosphere and upper ocean GHG concentration
-def M_up_eq(m, t):
+# Athmospheric CH4 GHG concentration
+def M_CH4_at_eq(m, t): #CH
     if t == 1:
-        return m.M_up[t] ==  b12*M_at_0 + b22*M_up_0 + b32*M_lo_0
+        return m.M_CH4_at[t] == (sum(E_CH4_0[i] + e_CH4_land_0[i] for i in m.mC))*tstep + b11*M_at_0 
     else:
-        return m.M_up[t] == b12*m.M_at[t-1] + b22*m.M_up[t-1] + b32*m.M_lo[t-1]
-m.M_up_eq = pe.Constraint(m.t, rule=M_up_eq)
+        return m.M_CH4_at[t] == m.E_CH4_tot[t-1]*tstep + b11*m.M_CH4_at[t-1] 
+m.M_CH4_at_eq = pe.Constraint(m.t, rule=M_CH4_at_eq)
 
-# Lower ocean GHG concentration
-def M_lo_eq(m, t):
-    if t == 1:
-        return m.M_lo[t] ==  b23*M_up_0 + b33*M_lo_0
-    else:
-        return m.M_lo[t] == b23*m.M_up[t-1] + b33*m.M_lo[t-1]
-m.M_lo_eq = pe.Constraint(m.t, rule=M_lo_eq)
+# Biosphere and upper ocean GHG concentration
+# def M_up_eq(m, t):
+#     if t == 1:
+#         return m.M_up[t] ==  b12*M_at_0 + b22*M_up_0 + b32*M_lo_0
+#     else:
+#         return m.M_up[t] == b12*m.M_at[t-1] + b22*m.M_up[t-1] + b32*m.M_lo[t-1]
+# m.M_up_eq = pe.Constraint(m.t, rule=M_up_eq)
+
+# # Lower ocean GHG concentration
+# def M_lo_eq(m, t):
+#     if t == 1:
+#         return m.M_lo[t] ==  b23*M_up_0 + b33*M_lo_0
+#     else:
+#         return m.M_lo[t] == b23*m.M_up[t-1] + b33*m.M_lo[t-1]
+# m.M_lo_eq = pe.Constraint(m.t, rule=M_lo_eq)
 
 # Athmospheric temperature increase
 def T_at_eq(m, t):
@@ -674,9 +758,16 @@ def T_lo_eq(m, t):
         return m.T_lo[t] == m.T_lo[t-1] + c4*(m.T_at[t-1] - m.T_lo[t-1]) 
 m.T_lo_eq = pe.Constraint(m.t, rule=T_lo_eq)
 
-# Radiative force
+# # Radiative force
+# def F_eq(m, t):
+#     return m.F[t] == eta*pe.log(m.M_at[t]/M_1900)/pe.log(2) + f_ex[t]
+# m.F_eq = pe.Constraint(m.t, rule=F_eq)
+
+
+
+# Radiative force CH4
 def F_eq(m, t):
-    return m.F[t] == eta*pe.log(m.M_at[t]/M_1900)/pe.log(2) + f_ex[t]
+    return m.F[t] == eta*pe.log(m.M_at[t]/M_1900)/pe.log(2) + f_ex[t] + eta * 0.05* (pe.sqrt(m.M_CH4_at[t]) - pe.sqrt(M_1900))
 m.F_eq = pe.Constraint(m.t, rule=F_eq)
 
 # Transform dataset for variable initialization to dictionary that is required 
@@ -696,8 +787,11 @@ I_init_dic = {(i, j): I_init.loc[i][j] for i in I_init.index for j in I_init.col
 D_init_dic = {(i, j): D_init.loc[i][j] for i in D_init.index for j in D_init.columns[:-1]}
 C_init_dic = {(i, j): C_init.loc[i][j] for i in C_init.index for j in C_init.columns[:-1]}
 E_ind_init_dic = {(i, j): E_ind_init.loc[i][j] for i in E_ind_init.index for j in E_ind_init.columns[:-1]}
+E_CH4_ind_init_dic = {(i, j): E_CH4_ind_init.loc[i][j] for i in E_CH4_ind_init.index for j in E_CH4_ind_init.columns[:-1]} #CH4
 E_tot_init_dic = {int(j): E_tot_init.loc[j] for j in E_tot_init.index[:-1]}
+E_CH4_tot_init_dic = {int(j): E_CH4_tot_init.loc[j] for j in E_CH4_tot_init.index[:-1]} #CH
 M_at_init_dic = {int(j): M_at_init.loc[j] for j in M_at_init.index[:-1]}
+M_CH4_at_init_dic = {int(j): M_CH4_at_init.loc[j] for j in M_CH4_at_init.index[:-1]} #CH4
 M_lo_init_dic = {int(j): M_lo_init.loc[j] for j in M_lo_init.index[:-1]}
 M_up_init_dic = {int(j): M_up_init.loc[j] for j in M_up_init.index[:-1]}
 T_at_init_dic = {int(j): T_at_init.loc[j] for j in T_at_init.index[:-1]}
@@ -705,7 +799,8 @@ T_lo_init_dic = {int(j): T_lo_init.loc[j] for j in T_lo_init.index[:-1]}
 F_init_dic = {int(j): F_init.loc[j] for j in F_init.index[:-1]}
 
 # Setting optimization algorithm specifications
-opt = pe.SolverFactory('ipopt', executable=solver_path)
+# opt = pe.SolverFactory('ipopt', executable=solver_path)
+opt = pe.SolverFactory('ipopt')
 opt.options['max_iter']= max_iter
 opt.options['tol'] = tol
 
@@ -750,9 +845,12 @@ if coop_c and coa_c != 'all':
         m.AB.set_values(AB_init_dic)            
         m.D.set_values(D_init_dic)                            
         m.C.set_values(C_init_dic)                            
-        m.E_ind.set_values(E_ind_init_dic)                    
-        m.E_tot.set_values(E_tot_init_dic)                          
+        m.E_ind.set_values(E_ind_init_dic)     
+        m.E_CH4_ind.set_values(E_CH4_ind_init_dic)     #CH           
+        m.E_tot.set_values(E_tot_init_dic)         
+        m.E_CH4_tot.set_values(E_CH4_tot_init_dic)          #CH                 
         m.M_at.set_values(M_at_init_dic)        
+        m.M_CH4_at.set_values(M_CH4_at_init_dic)    #CH
         m.M_up.set_values(M_up_init_dic)                                       
         m.M_lo.set_values(M_lo_init_dic)                                       
         m.T_at.set_values(T_at_init_dic)                                       
@@ -845,9 +943,12 @@ if nc_c or coa_c == 'all':
         m.AB.set_values(AB_init_dic)            
         m.D.set_values(D_init_dic)                            
         m.C.set_values(C_init_dic)                            
-        m.E_ind.set_values(E_ind_init_dic)                    
-        m.E_tot.set_values(E_tot_init_dic)                          
+        m.E_ind.set_values(E_ind_init_dic)       
+        m.E_CH4_ind.set_values(E_CH4_ind_init_dic)   #CH                 
+        m.E_tot.set_values(E_tot_init_dic)              
+        m.E_CH4_tot.set_values(E_CH4_tot_init_dic)           #CH             
         m.M_at.set_values(M_at_init_dic)        
+        m.M_CH4_at.set_values(M_CH4_at_init_dic)     #CH4
         m.M_up.set_values(M_up_init_dic)                                       
         m.M_lo.set_values(M_lo_init_dic)                                       
         m.T_at.set_values(T_at_init_dic)                                       
@@ -932,9 +1033,12 @@ if coa_c != 'none':
         m.AB.set_values(AB_init_dic)            
         m.D.set_values(D_init_dic)                            
         m.C.set_values(C_init_dic)                            
-        m.E_ind.set_values(E_ind_init_dic)                    
-        m.E_tot.set_values(E_tot_init_dic)                          
-        m.M_at.set_values(M_at_init_dic)        
+        m.E_ind.set_values(E_ind_init_dic)              
+        m.E_CH4_ind.set_values(E_CH4_ind_init_dic)         #CH4              
+        m.E_tot.set_values(E_tot_init_dic)         
+        m.E_CH4_tot.set_values(E_CH4_tot_init_dic)              #CH4            
+        m.M_at.set_values(M_at_init_dic)      
+        m.M_CH4_at.set_values(M_CH4_at_init_dic)           #CH
         m.M_up.set_values(M_up_init_dic)                                       
         m.M_lo.set_values(M_lo_init_dic)                                       
         m.T_at.set_values(T_at_init_dic)                                       
@@ -1168,8 +1272,9 @@ if coa_c != 'none':
         exl_file.save(filename = results_path + coa_c + '.xlsx')        
     
     
-    
-    
+run_end = datetime.datetime.now()  
+print('FINISHED at : ', run_end)
+print('TOTAL TIME: ', run_end-run_start)
     
     
     
