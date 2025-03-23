@@ -1,5 +1,7 @@
 
 import datetime
+
+
 run_start = datetime.datetime.now()
 print('STARTED at : ' , run_start)
 import math
@@ -117,15 +119,15 @@ c2      = float(inv_p.loc['c2'].iloc[0])           # Transfer coefficient from p
 c3      = float(inv_p.loc['c3'].iloc[0])           # Coefficient of heat loss from atmosphere to oceans
 c4      = float(inv_p.loc['c4'].iloc[0])           # Coefficient of heat gain by deep oceans
 M_1900  = float(inv_p.loc['M_1900'].iloc[0])       # Reference concentration of CO2 (1900 level)
+
 eta     = float(inv_p.loc['eta'].iloc[0])          # Forcings of equilibrium CO2 doubling (Wm-2)
-t2xco2  = float(inv_p.loc['t2xco2'].iloc[0])       # Equilibrium temperature increase for CO2 doubling (t2xco2)
 F_ex_1  = float(inv_p.loc['F_ex_1'].iloc[0])       # 2000 forcings other ghg
 F_ex_2  = float(inv_p.loc['F_ex_2'].iloc[0])       # 2100 forcings other ghg
 T_at_05 = float(inv_p.loc['T_at_05'].iloc[0])      # Initial atmospheric temperature, 2005 (deg. C above 1900)
 T_at_15 = float(inv_p.loc['T_at_15'].iloc[0])      # Initial atmospheric temperature, 2015 (deg. C above 1900)
 T_lo_0  = float(inv_p.loc['T_lo_0'].iloc[0])       # Initial temperature of deep oceans (deg. C above 1900)
 M_at_0  = float(inv_p.loc['M_at_0'].iloc[0])       # Initial atmospheric concentration of CO2 (GTC, 2010)
-M_CH4_at_0  = float(inv_p.loc['M_at_0'].iloc[0])   #CH4   # Initial atmospheric concentration of CO2 (GTC, 2010)
+M_CH4_at_0  =  5089 / 2.75       #float(inv_p.loc['M_at_0'].iloc[0])   #CH4   # Initial atmospheric concentration of CO2 (GTC, 2010)
 M_up_0  = float(inv_p.loc['M_up_0'].iloc[0])       # Initial concentration of CO2 in biosphere/shallow oceans (GTC)
 M_lo_0  = float(inv_p.loc['M_lo_0'].iloc[0])       # Initial concentration of CO2 in deep oceans (GTC)
 
@@ -139,23 +141,23 @@ alpha   = c_var_p.loc['alpha']            # Marginal Utility of consumption
 d_1    = c_var_p.loc['d_1']               # damage coefficient on temperature
 d_2    = c_var_p.loc['d_2']               # damage coefficient on temperature squared
 d_3    = c_var_p.loc['d_3']               # Exponent on damages
-cat_t   = c_var_p.loc['cat_treash']       # Threshold for catastrophic damages
-d_3_cat = c_var_p.loc['d_3_cat']          # Exponent for catastrophic damages
+
+
 pback   = c_var_p.loc['pback']            # Price backstop technology (2005 US 000 $ per tC)
 d_ab    = c_var_p.loc['d_ab']             # Decline of backstop price (per decade)
 th_2    = c_var_p.loc['th_2']             # Coefficient on abatement level
 E_0     = c_var_p.loc['E_0']              # CO2 emissions for 2005
-E_CH4_0     = c_var_p.loc['E_0']          #CH4     # CO2 emissions for 2005
+E_CH4_0     = c_var_p.loc['E_CH4_0']          #CH4     # CO2 emissions for 2005
 Sig_0   = c_var_p.loc['Sig_0']            # Initial sigma (tC per $1000 GDP US $, 2005 prices) 2005
 eland_0 = c_var_p.loc['Eland_0']          # Initial carbon emissions from land use change (GTC per year)
-e_CH4_land_0 = c_var_p.loc['Eland_0']     #CH4    # Initial carbon emissions from land use change (GTC per year)
+e_CH4_land_0 = c_var_p.loc['E_CH4_land_0']     #CH4    # Initial carbon emissions from land use change (GTC per year)
 d_el    = c_var_p.loc['d_el']             # Decline rate of land emissions per decade
 d_sig   = c_var_p.loc['d_sig']            # Decline of growth rate of sigma (sigma = emission intensity)
 tr_sig  = c_var_p.loc['tr_sig']           # Trend of sigma (sigma = emission intensity)
 tot_sig = c_var_p.loc['tot_sig']          # Total sigma growth (used to compute year 2015 of g_sigma)
-sig_9506= c_var_p.loc['sig_9506']         # Average Sigma for period 95-06 
-add_sig = c_var_p.loc['add_sig']          # Sigma increase for 2015 only
-s_r     = c_var_p.loc['s_r']              # Saving rate (computed as average of all time periods in original RICE2013 excell file)
+
+
+
 d1_slr  = c_var_p.loc['d1_slr']           # Damage coefficient for sea level rise (SLR) – linear
 d2_slr  = c_var_p.loc['d2_slr']           # Damage coefficient for sea level rise (SLR) – quadratic
 sig_15_add  = c_var_p.loc['sig_15_add']   # Multiplicative factor to add to sigma only for year 2015
@@ -169,7 +171,7 @@ A_0     = t0_v.loc['A_0']           # Calculated A (Initial)
 s_0     = t0_v.loc['s_0']           # Initial savings rate
 L_0     = t0_v.loc['L_0']           # Initial population
 E_0     = t0_v.loc['E_0']           # Initial emissions
-E_CH4_0     = t0_v.loc['E_0']       #CH4   # Initial emissions
+E_CH4_0     = t0_v.loc['E_CH4_0']       #CH4   # Initial emissions
 
 # TFP and population growth for all years (g_A(t) and g_L(t) in the equations of the paper)
 
@@ -299,8 +301,41 @@ for i in countries:
         else:
             e_CH4_land.loc[i,j] = e_CH4_land.loc[i,j-1]*(1-d_el.loc[i]*(tstep/10))
 
+
+
+
+from bisect import bisect
+
+def load_forcother(filepath='ssp/forcother_1.txt'):
+    """Загружает (year, nonco2_forcing) из файла"""
+    data = []
+    with open(filepath, 'r') as f:
+        for line in f:
+            year, co2f, ch4f, totalf = line.strip().split()
+            nonco2 = float(totalf) - float(co2f) - float(ch4f)
+            data.append((int(year), nonco2))
+    return data
+
+def interp_forcother(data, year):
+    """Интерполирует nonco2_forcing по году"""
+    index = bisect(data, (year, 0.))
+    if index == 0:
+        return data[0][1]
+    if index == len(data):
+        return data[-1][1]
+    y0, v0 = data[index - 1]
+    y1, v1 = data[index]
+    return v0 + (v1 - v0) * (year - y0) / (y1 - y0)
+
+
+raw_data_f_other = load_forcother()
+f_ex = pd.Series([interp_forcother(raw_data_f_other, 2015 + j*tstep) for j in range(T)], index=y_as_int)
+
 # Exogenous radiative forcing (FORCOTH(t)) 
-f_ex = pd.Series([F_ex_1+0.1*(F_ex_2-F_ex_1)*j if j<11 else F_ex_1+0.36 for j in range(T)], index=y_as_int)
+# f_ex = pd.Series([F_ex_1+0.1*(F_ex_2-F_ex_1)*j if j<11 else F_ex_1+0.36 for j in range(T)], index=y_as_int)
+
+# with open('tmp_debug_file.csv', 'a') as file:
+#     file.writelines(str(f_other))
 
 if tstep != 10:   
     from sklearn.linear_model import LinearRegression
@@ -685,7 +720,7 @@ def D_eq(m, mC, t):
     return m.D[mC, t] == (d_1[mC]*m.T_at[t] + d_2[mC]*m.T_at[t]**d_3[mC])*0.01 \
                          + 2*(d1_slr[mC]*slr_p[t-1] + d2_slr[mC]*slr_p[t-1]**2)*(m.Q[mC, t]/Y_0[mC])**0.25
 m.D_eq = pe.Constraint(m.mC, m.t, rule=D_eq)
-
+print('HELLO: \n\n\n: ', [d_3[mC] for mC in m.mC], 'HELLO: \n\n\n:')
 # Consumption
 def C_eq(m, mC, t):
     return m.C[mC, t] == m.Y[mC, t] - m.I[mC, t]
@@ -721,9 +756,9 @@ m.M_at_eq = pe.Constraint(m.t, rule=M_at_eq)
 # Athmospheric CH4 GHG concentration
 def M_CH4_at_eq(m, t): #CH
     if t == 1:
-        return m.M_CH4_at[t] == (sum(E_CH4_0[i] + e_CH4_land_0[i] for i in m.mC))*tstep + b11*M_at_0 
+        return m.M_CH4_at[t] == (sum(E_CH4_0[i] + e_CH4_land_0[i] for i in m.mC))*tstep + 0.9 * M_CH4_at_0 
     else:
-        return m.M_CH4_at[t] == m.E_CH4_tot[t-1]*tstep + b11*m.M_CH4_at[t-1] 
+        return m.M_CH4_at[t] == m.E_CH4_tot[t-1]*tstep + 0.9 * m.M_CH4_at[t-1] 
 m.M_CH4_at_eq = pe.Constraint(m.t, rule=M_CH4_at_eq)
 
 # Biosphere and upper ocean GHG concentration
@@ -767,7 +802,7 @@ m.T_lo_eq = pe.Constraint(m.t, rule=T_lo_eq)
 
 # Radiative force CH4
 def F_eq(m, t):
-    return m.F[t] == eta*pe.log(m.M_at[t]/M_1900)/pe.log(2) + f_ex[t] + eta * 0.05* (pe.sqrt(m.M_CH4_at[t]) - pe.sqrt(M_1900))
+    return m.F[t] == eta*pe.log(m.M_at[t]/M_1900)/pe.log(2) + f_ex[t] + 0.036 * (pe.sqrt(m.M_CH4_at[t]) - pe.sqrt(772))
 m.F_eq = pe.Constraint(m.t, rule=F_eq)
 
 # Transform dataset for variable initialization to dictionary that is required 
@@ -829,6 +864,8 @@ if coop_c or coa_c == 'all':
     #Save output on Excell file
     
     results_to_excel(res_coop, countries, results_path, 'coop.xlsx')
+
+  
     
     # Stability Analysis
     # (For full cooperation, only internal stability has to be computed)
