@@ -156,6 +156,9 @@ d_sig   = c_var_p.loc['d_sig']            # Decline of growth rate of sigma (sig
 tr_sig  = c_var_p.loc['tr_sig']           # Trend of sigma (sigma = emission intensity)
 tot_sig = c_var_p.loc['tot_sig']          # Total sigma growth (used to compute year 2015 of g_sigma)
 
+INITIAL_INDUSTRIAL_CH4_EMISSIONS = 363
+INITIAL_EMISSION_CONTROL = 0.03
+
 
 
 d1_slr  = c_var_p.loc['d1_slr']           # Damage coefficient for sea level rise (SLR) – linear
@@ -275,6 +278,48 @@ for i in countries:
                 sig.loc[i,j] = sig.loc[i,j-1]*math.exp(g_sig.loc[i,j*2]*tstep)
             else:
                 sig.loc[i,j] = sig.loc[i,j-1]*math.exp(g_sig.loc[i,j//int(10/tstep)+1]*tstep)
+
+
+sig_CH4 = pd.DataFrame(0, index=countries,columns=y_as_int) #CH
+sig_CH4 = sig_CH4.astype(float)
+
+##Это тут временно :))
+E_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0)
+E_CH4_ind_0 = [INITIAL_INDUSTRIAL_CH4_EMISSIONS * E_ind_init['0'][c]/(sum(E_ind_init['0'])) for c in countries ]
+Sig_CH4_0 = [E_CH4_ind_0[i]/ (Y_0[i] * (1 - 0.03)) for i in range(len(countries))]
+
+C_INTENSITY_GROWTH = [-0.0152]
+while len(C_INTENSITY_GROWTH) < T + 1:
+    C_INTENSITY_GROWTH.append(C_INTENSITY_GROWTH[-1] * 0.999 ** tstep)
+
+
+for ii, i in enumerate(countries):
+    for j in range(T):
+        if j==0:
+            sig_CH4.loc[i,j] = Sig_CH4_0[ii] #start sig for each country
+        elif j ==1:
+            # sig_CH4.loc[i,j] = sig_CH4.loc[i,j-1]*math.exp(g_sig.loc[i,j]*10)*sig_15_add[i] #prev * exp(10*g_sig)
+            sig_CH4.loc[i,j] = sig_CH4.loc[i,j-1]*math.exp(C_INTENSITY_GROWTH[ j-1 // tstep] * tstep)
+        else:
+            if tstep==10:
+                sig_CH4.loc[i,j] = sig_CH4.loc[i,j-1]*math.exp(C_INTENSITY_GROWTH[ j-1 // tstep] * tstep)
+            elif tstep==20:
+                sig_CH4.loc[i,j] = sig_CH4.loc[i,j-1]*math.exp(C_INTENSITY_GROWTH[ j-1 // tstep] * tstep)
+            else:
+                sig_CH4.loc[i,j] = sig_CH4.loc[i,j-1]*math.exp(C_INTENSITY_GROWTH[ j-1 // tstep] * tstep)
+
+
+# sig_CH4.to_csv('TMP_SIG_CH4')
+
+from vp import vprint
+
+vprint(sig_CH4)
+
+vprint(sig)
+
+
+
+
 
 # Emissions from land (ETREE(i,t)) - exogenous
 eland = pd.DataFrame(0, index=countries, columns=y_as_int)
@@ -416,6 +461,8 @@ C_init = pd.read_csv(data_path+'C_init.csv', sep=';', index_col=0)
 E_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0)
 E_CH4_ind_init = pd.read_csv(data_path+'E_ind_init.csv', sep=';', index_col=0) #CH
 oth_var = pd.read_csv(data_path+'Var_country_independent_init.csv', sep=';', index_col=0)
+
+
 
 # Keep only relevant number of time periods (max T = 59)
 # Do not know why, but it imports the columns indexes as str instead of int (need to convert them)
@@ -607,6 +654,10 @@ def Y_init_f(m, mC, t):
 def mu_init_f(m, mC, t):
     return mu_init.loc[mC, t]
 
+# def mu_CH4_init_f(m, mC, t):
+#     # return min(mu_init.loc[mC, t], 1)
+#     return (1 - pe.exp(-0.314 * mu_init.loc[mC, t])) / 0.314
+
 def AB_init_f(m, mC, t):
     return AB_init.loc[mC, t]
 
@@ -657,7 +708,8 @@ m.S = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = S
 m.I = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = I_init_f)                            # Investments (= savings)
 m.Q = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = Q_init_f)                            # Gross output
 m.Y = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = Y_init_f)                            # Net output (after damages and expenditures for abatement)
-m.mu = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = mu_init_f)            # Abatement rate (control variable)
+m.mu = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0, 1), initialize = mu_init_f)            # Abatement rate (control variable)
+# m.mu_CH4 = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = mu_CH4_init_f)      #CH ?
 m.AB = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = AB_init_f)            # Abatement costs (proportional)
 m.D = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = D_init_f)                            # Environmental damages
 m.C = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = C_init_f)                            # Consumption
@@ -672,6 +724,9 @@ m.M_lo = pe.Var(m.t, domain=pe.Reals, initialize = M_lo_init_f)                 
 m.T_at = pe.Var(m.t, domain=pe.Reals, initialize = T_at_init_f)                                       # Atmospheric temperature (increase over normal)
 m.T_lo = pe.Var(m.t, domain=pe.Reals, initialize = T_lo_init_f)                                       # Temperature (lower ocean)
 m.F = pe.Var(m.t, domain=pe.Reals, initialize = F_init_f)                                             # Radiative force
+
+
+
 
 # Equations definition
 
@@ -720,7 +775,7 @@ def D_eq(m, mC, t):
     return m.D[mC, t] == (d_1[mC]*m.T_at[t] + d_2[mC]*m.T_at[t]**d_3[mC])*0.01 \
                          + 2*(d1_slr[mC]*slr_p[t-1] + d2_slr[mC]*slr_p[t-1]**2)*(m.Q[mC, t]/Y_0[mC])**0.25
 m.D_eq = pe.Constraint(m.mC, m.t, rule=D_eq)
-print('HELLO: \n\n\n: ', [d_3[mC] for mC in m.mC], 'HELLO: \n\n\n:')
+
 # Consumption
 def C_eq(m, mC, t):
     return m.C[mC, t] == m.Y[mC, t] - m.I[mC, t]
@@ -731,8 +786,15 @@ def E_ind_eq(m, mC, t):
     return m.E_ind[mC, t] == sig.loc[mC, t]*((1-m.mu[mC, t])*m.Q[mC, t])
 m.E_ind_eq = pe.Constraint(m.mC, m.t, rule=E_ind_eq)
 
+
+def mu_CH4_rule(m, mC, t):
+        coeff = 0.314 # such that model.ch4_emission_control is 1 when co2_emission_control is 1.2
+        return (1 - pe.exp(-coeff * m.mu[mC, t])) / coeff
+        # return min(1, m.mu[mC, t])
+m.mu_CH4 = pe.Expression(m.mC, m.t, rule=mu_CH4_rule)
+
 def E_CH4_ind_eq(m, mC, t): #CH4
-    return m.E_CH4_ind[mC, t] == sig.loc[mC, t]*((1-m.mu[mC, t])*m.Q[mC, t])
+    return m.E_CH4_ind[mC, t] == sig_CH4.loc[mC, t]*((1-m.mu_CH4[mC, t])*m.Q[mC, t])
 m.E_CH4_ind_eq = pe.Constraint(m.mC, m.t, rule=E_CH4_ind_eq)
 
 # Total emissions including emissions from LUC (summed over all countries)
@@ -847,6 +909,7 @@ if coop_c or coa_c == 'all':
     
     # Solving the optimization problem
     opt.solve(m)
+
     
     # Delete the objective function for other eventual optimizations
     del m.obj
