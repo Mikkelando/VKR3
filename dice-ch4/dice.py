@@ -4,7 +4,7 @@ from ssp import ssp_ch4nat, ssp_forcother
 START_YEAR = 2015
 YEAR_STEP = 5
 SECOND_YEAR = START_YEAR + YEAR_STEP
-TOTAL_STEPS = 100
+TOTAL_STEPS = 20
 
 # Economic constants
 INITIAL_POPULATION = 7403.

@@ -1,0 +1,7 @@
+M_at_0;829 # Initial atmospheric concentration of CO2 (GTC, 2010)
+M_1900;596.4 # Reference concentration of CO2 (1900 level)
+E_0;1.662133455;1.146050619;0.369965926;0.431236182;0.256666293;1.600741128;0.40515159;0.58967496;0.191377084;0.412272399;0.541778261;0.363952103 # CO2 emissions for 2005
+Sig_0;0.134065723;0.08794763;0.095591421;0.253973604;0.317917935;0.300144622;0.165989167;0.169441796;0.147153133;0.090440835;0.141012818;0.138956043 #Initial sigma #add object
+Eland_0;0;0;0;0;0;0;0;0;0.3;0.6;0;0.7 # Initial carbon emissions from land use change (GTC per year)
+
+d_el;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2 # Decline rate of land emissions per decade

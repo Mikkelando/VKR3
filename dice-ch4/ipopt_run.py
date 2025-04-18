@@ -16,9 +16,12 @@ for ssp_scenario in range(1, 2):
     # industrial_ch4_emissions
     # print('\n\ch4_intensity  : ', ssp_scenario, model.ch4_intensity.display(), '?')
 
-    print('\n\ch4_emission_control  : ', ssp_scenario, model.ch4_emission_control.display(), '?')
-    print('\n\co2_emission_control  : ', ssp_scenario, model.co2_emission_control.display(), '?')
-  
+    # print('\n\ch4_emission_control  : ', ssp_scenario, model.ch4_emission_control.display(), '?')
+    # print('\n\co2_emission_control  : ', ssp_scenario, model.co2_emission_control.display(), '?')
+
+    # print('\n\co2_emissions  : ', ssp_scenario, model.co2_emissions.display(), '?')
+    print('\n\ch4_emissions  : ', ssp_scenario, model.ch4_emissions.display(), '?')
+    
     
     save_solution(model, status)
 build_graphs(until=2100)

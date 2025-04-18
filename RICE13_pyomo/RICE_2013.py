@@ -401,6 +401,7 @@ for i in countries:
     for j in range(60):
         if j==0:
             backstpr1.loc[i,j] = pback.loc[i]
+            
         elif j==1:
             backstpr1.loc[i,j] = pback.loc[i]*0.1+0.9*pback.loc[i]*(1-d_ab.loc[i])
         elif 2015 + j*tstep >= 2250:    # Assumption of a completely green technology cheaper than fossil fuels 
@@ -412,11 +413,13 @@ if tstep == 10:
     backstpr = backstpr1.loc[:,:T+1]    
 elif tstep == 20:
     backstpr = pd.DataFrame(0, index=countries, columns=y_as_int)
+    backstpr = backstpr.astype(float)
     backstpr.loc[:, 0] = backstpr1.loc[:,0]
     for i in range(T):
         backstpr.loc[:, i+1]  = backstpr1.loc[:,i*2+1]   
 else:
     backstpr = pd.DataFrame(0, index=countries, columns=y_as_int)
+    backstpr = backstpr.astype(float)
     backstpr.loc[:, 0] = backstpr1.loc[:,0]
     n_per = int(10/tstep)
     n_T = int(T/n_per)
@@ -917,8 +920,9 @@ if coop_c or coa_c == 'all':
     ### Cooperative results ###
     
     # Data Frame of results for full cooperative case
-    
+    vprint(m.E_tot)
     coop_dict = model_res_to_dict(m)
+    vprint(coop_dict)
     
     res_coop = output_format(countries, coop_dict, t, T)
 
@@ -1371,7 +1375,7 @@ if coa_c != 'none':
             sheet['m18'] = "False"
         exl_file.save(filename = results_path + coa_c + '.xlsx')        
     
-    
+
 run_end = datetime.datetime.now()  
 print('FINISHED at : ', run_end)
 print('TOTAL TIME: ', run_end-run_start)
