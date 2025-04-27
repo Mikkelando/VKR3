@@ -905,6 +905,7 @@ opt.options['max_iter']= max_iter
 opt.options['tol'] = tol
 
 if coop_c or coa_c == 'all':
+    print('/n I WAS THERE/n')
     # Objective function (for the cooperative case)
     def obj_eq(m):
         return sum(m.U[i, j] for i in m.mC for j in m.t)
@@ -936,103 +937,107 @@ if coop_c or coa_c == 'all':
     
     # Stability Analysis
     # (For full cooperation, only internal stability has to be computed)
-if coop_c and coa_c != 'all':
-    gr_coa = [1 for i in range(N)]
-    l_int_c = coa_int(gr_coa)
-    coa_res = []
-    for i in l_int_c:
-        m.U.set_values(U_init_dic)                                       
-        m.I.set_values(I_init_dic)
-        m.S.set_values(S_init_dic)                            
-        m.Q.set_values(Q_init_dic)                           
-        m.Y.set_values(Y_init_dic)                                       
-        m.AB.set_values(AB_init_dic)            
-        m.D.set_values(D_init_dic)                            
-        m.C.set_values(C_init_dic)                            
-        m.E_ind.set_values(E_ind_init_dic)     
-        m.E_CH4_ind.set_values(E_CH4_ind_init_dic)     #CH           
-        m.E_tot.set_values(E_tot_init_dic)         
-        m.E_CH4_tot.set_values(E_CH4_tot_init_dic)          #CH                 
-        m.M_at.set_values(M_at_init_dic)        
-        m.M_CH4_at.set_values(M_CH4_at_init_dic)    #CH
-        m.M_up.set_values(M_up_init_dic)                                       
-        m.M_lo.set_values(M_lo_init_dic)                                       
-        m.T_at.set_values(T_at_init_dic)                                       
-        m.T_lo.set_values(T_lo_init_dic)                                       
-        m.F.set_values(F_init_dic)                                             
-        for pl in m.mC:
-            for tt in m.t:
-                m.mu[pl, tt].fix(pe.value(m.mu[pl, tt]))
-                m.S[pl, tt].fix(pe.value(m.S[pl, tt]))
-        coal = {countries[k]: i[k] for k in range(len(i))}
-        stop_rule = False
-        res_track = []
-        count_iter = 0
-        # This tolerance relates to the results of the control variable m.mu between
-        # successive best response iterations. The number should always be greater (less precision ) 
-        # than the provided tol (precision of the optimization algorithm) otherwise 
-        # convergence is likely not to be achieved for rounding errors. The difference should
-        # be of at least 2 orders of magnitude: e.g. 1e-5 and 1e-7
-        tol_2 = 0.00001
-        # Change the following number to increase\reduce the max number of iterations to
-        # find convergence among successive best response solutions. If the limit is
-        # reached, the given solution is likely not to be optimal. This number is necessary to 
-        # avoid infinite loops. 
-        iter_lim = 25           
-        while stop_rule == False and count_iter <= iter_lim:
-            res_track.append([])    
-            for player in m.mC:
-                for tt in m.t:
-                    m.mu[player, tt].fixed = False
-                    m.S[player, tt].fixed = False
-                if coal[player] == 1:
-                    obj_expr = sum(m.U[k, j]*coal[k] for k in m.mC for j in m.t)
-                else:
-                    obj_expr = sum(m.U[player, j] for k in m.mC for j in m.t)
-                m.obj = pe.Objective(expr = obj_expr, sense=pe.maximize) 
-                opt.solve(m)
-                del m.obj 
-                res_track[count_iter].append(pe.value(m.mu[player, :]))
-                for tt in m.t:
-                    m.mu[player, tt].fix(pe.value(m.mu[player, tt]))
-                    m.S[player, tt].fix(pe.value(m.S[player, tt]))
-            if count_iter != 0:
-                # Check on convergence is performed only on m.mu, not on m.S for 
-                # shortening computation time
-                stop_rule = all(res_track[-1][i][j] >= res_track[-2][i][j] - tol_2 and \
-                                res_track[-1][i][j] <= res_track[-2][i][j] + tol_2     \
-                                for i in range(len(mC)) for j in range(T-1))            
-            count_iter += 1
-        coa_n = [countries[j] for j in range(len(countries)) if i[j] == 1]
-        coa_res.append([model_res_to_dict(m), coa_n, count_iter])
+# if coop_c and coa_c != 'all':
+#     gr_coa = [1 for i in range(N)]
+#     l_int_c = coa_int(gr_coa)
+#     coa_res = []
+#     for i in l_int_c:
+#         m.U.set_values(U_init_dic)                                       
+#         m.I.set_values(I_init_dic)
+#         m.S.set_values(S_init_dic)                            
+#         m.Q.set_values(Q_init_dic)                           
+#         m.Y.set_values(Y_init_dic)                                       
+#         m.AB.set_values(AB_init_dic)            
+#         m.D.set_values(D_init_dic)                            
+#         m.C.set_values(C_init_dic)                            
+#         m.E_ind.set_values(E_ind_init_dic)     
+#         m.E_CH4_ind.set_values(E_CH4_ind_init_dic)     #CH           
+#         m.E_tot.set_values(E_tot_init_dic)         
+#         m.E_CH4_tot.set_values(E_CH4_tot_init_dic)          #CH                 
+#         m.M_at.set_values(M_at_init_dic)        
+#         m.M_CH4_at.set_values(M_CH4_at_init_dic)    #CH
+#         m.M_up.set_values(M_up_init_dic)                                       
+#         m.M_lo.set_values(M_lo_init_dic)                                       
+#         m.T_at.set_values(T_at_init_dic)                                       
+#         m.T_lo.set_values(T_lo_init_dic)                                       
+#         m.F.set_values(F_init_dic)                                             
+#         for pl in m.mC:
+#             for tt in m.t:
+#                 m.mu[pl, tt].fix(pe.value(m.mu[pl, tt]))
+#                 m.S[pl, tt].fix(pe.value(m.S[pl, tt]))
+#         coal = {countries[k]: i[k] for k in range(len(i))}
+#         stop_rule = False
+#         res_track = []
+#         count_iter = 0
+#         # This tolerance relates to the results of the control variable m.mu between
+#         # successive best response iterations. The number should always be greater (less precision ) 
+#         # than the provided tol (precision of the optimization algorithm) otherwise 
+#         # convergence is likely not to be achieved for rounding errors. The difference should
+#         # be of at least 2 orders of magnitude: e.g. 1e-5 and 1e-7
+#         tol_2 = 0.00001
+#         # Change the following number to increase\reduce the max number of iterations to
+#         # find convergence among successive best response solutions. If the limit is
+#         # reached, the given solution is likely not to be optimal. This number is necessary to 
+#         # avoid infinite loops. 
+#         iter_lim = 25           
+#         while stop_rule == False and count_iter <= iter_lim:
+#             res_track.append([])    
+#             for player in m.mC:
+#                 for tt in m.t:
+#                     m.mu[player, tt].fixed = False
+#                     m.S[player, tt].fixed = False
+#                 if coal[player] == 1:
+#                     obj_expr = sum(m.U[k, j]*coal[k] for k in m.mC for j in m.t)
+#                 else:
+#                     # obj_expr = sum(m.U[player, j] for k in m.mC for j in m.t)
+#                     obj_expr = sum(m.U[player, j] for j in m.t)
+#                 m.obj = pe.Objective(expr = obj_expr, sense=pe.maximize) 
+#                 subresult = opt.solve(m, tee=True)
+#                 print(subresult.solver)
+#                 print('/nJUST DEBUG UP HERE ^/n')
+                
+#                 del m.obj 
+#                 res_track[count_iter].append(pe.value(m.mu[player, :]))
+#                 for tt in m.t:
+#                     m.mu[player, tt].fix(pe.value(m.mu[player, tt]))
+#                     m.S[player, tt].fix(pe.value(m.S[player, tt]))
+#             if count_iter != 0:
+#                 # Check on convergence is performed only on m.mu, not on m.S for 
+#                 # shortening computation time
+#                 stop_rule = all(res_track[-1][i][j] >= res_track[-2][i][j] - tol_2 and \
+#                                 res_track[-1][i][j] <= res_track[-2][i][j] + tol_2     \
+#                                 for i in range(len(mC)) for j in range(T-1))            
+#             count_iter += 1
+#         coa_n = [countries[j] for j in range(len(countries)) if i[j] == 1]
+#         coa_res.append([model_res_to_dict(m), coa_n, count_iter])
     
-    if coa_c != 'all':
-        res_coa = []
-        for i in coa_res:
-            res_coa.append(output_format(countries, i[0], t, T))
-        coa_TU = [[sum(coa_v[i].loc['U',:]) for i in countries] for coa_v in res_coa]
-        cc_TU = [coa_TU[i][i] for i in range(len(coa_TU))]
+#     if coa_c != 'all':
+#         res_coa = []
+#         for i in coa_res:
+#             res_coa.append(output_format(countries, i[0], t, T))
+#         coa_TU = [[sum(coa_v[i].loc['U',:]) for i in countries] for coa_v in res_coa]
+#         cc_TU = [coa_TU[i][i] for i in range(len(coa_TU))]
         
-        exl_file = load_workbook(results_path+'coop.xlsx')
-        sheet = exl_file['global']
-        sheet['k12'] = 'Internally Stable'
-        sheet['k14'] = 'Externallly Stable'
-        sheet['k16'] = 'Fully Stable'
-        sheet['k18'] = 'PIS (Potential Internally Stable)'
+#         exl_file = load_workbook(results_path+'coop.xlsx')
+#         sheet = exl_file['global']
+#         sheet['k12'] = 'Internally Stable'
+#         sheet['k14'] = 'Externallly Stable'
+#         sheet['k16'] = 'Fully Stable'
+#         sheet['k18'] = 'PIS (Potential Internally Stable)'
         
-        if all(coop_TU[i] >= cc_TU[i] for i in range(len(coop_TU))):
-            sheet['m12'] = "True"
-            sheet['m16'] = "True"
-        else:
-            sheet['m12'] = "False"
-            sheet['m16'] = "False"
-        sheet['M14'] = 'Not Applicable'
+#         if all(coop_TU[i] >= cc_TU[i] for i in range(len(coop_TU))):
+#             sheet['m12'] = "True"
+#             sheet['m16'] = "True"
+#         else:
+#             sheet['m12'] = "False"
+#             sheet['m16'] = "False"
+#         sheet['M14'] = 'Not Applicable'
             
-        if sum(coop_TU) >= sum(cc_TU):
-            sheet['m18'] = "True"
-        else:
-            sheet['m18'] = "False"
-        exl_file.save(filename = results_path+'coop.xlsx')
+#         if sum(coop_TU) >= sum(cc_TU):
+#             sheet['m18'] = "True"
+#         else:
+#             sheet['m18'] = "False"
+#         exl_file.save(filename = results_path+'coop.xlsx')
 
 # Non cooperative result (no coalition being formed)
 
