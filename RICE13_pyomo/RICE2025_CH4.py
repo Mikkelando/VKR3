@@ -641,8 +641,8 @@ def run_model(mode='coop'):
     def mu_init_f(m, mC, t):
         return mu_init.loc[mC, t]
 
-    # def mu_CH4_init_f(m, mC, t):
-    #     # return min(mu_init.loc[mC, t], 1)
+    def mu_CH4_init_f(m, mC, t):
+        return mu_init.loc[mC, t]
     #     return (1 - pe.exp(-0.314 * mu_init.loc[mC, t])) / 0.314
 
     def AB_init_f(m, mC, t):
@@ -696,7 +696,7 @@ def run_model(mode='coop'):
     m.Q = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = Q_init_f)                            # Gross output
     m.Y = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = Y_init_f)                            # Net output (after damages and expenditures for abatement)
     m.mu = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0, 1), initialize = mu_init_f)            # Abatement rate (control variable)
-    # m.mu_CH4 = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = mu_CH4_init_f)      #CH ?
+    m.mu_CH4 = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = mu_CH4_init_f)      #CH ?
     m.AB = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = AB_init_f)            # Abatement costs (proportional)
     m.D = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = D_init_f)                            # Environmental damages
     m.C = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = C_init_f)                            # Consumption
@@ -776,9 +776,11 @@ def run_model(mode='coop'):
 
     def mu_CH4_rule(m, mC, t):
             coeff = 0.314 # such that model.ch4_emission_control is 1 when co2_emission_control is 1.2
-            return (1 - pe.exp(-coeff * m.mu[mC, t])) / coeff
+            # return (1 - pe.exp(-coeff * m.mu[mC, t])) / coeff
+            return m.mu_CH4[mC, t] == (1 - pe.exp(-coeff * m.mu[mC, t])) / coeff
             # return min(1, m.mu[mC, t])
-    m.mu_CH4 = pe.Expression(m.mC, m.t, rule=mu_CH4_rule)
+    # m.mu_CH4 = pe.Expression(m.mC, m.t, rule=mu_CH4_rule)
+    m.mu_CH4_eq = pe.Constraint(m.mC, m.t, rule=mu_CH4_rule)
 
     def E_CH4_ind_eq(m, mC, t): #CH4
         return m.E_CH4_ind[mC, t] == sig_CH4.loc[mC, t]*((1-m.mu_CH4[mC, t])*m.Q[mC, t])
@@ -912,7 +914,7 @@ def run_model(mode='coop'):
         # Data Frame of results for full cooperative case
         vprint(m.E_tot)
         coop_dict = model_res_to_dict(m)
-        vprint(coop_dict)
+        # vprint(coop_dict)
         
         res_coop = output_format(countries, coop_dict, t, T)
 
@@ -1006,14 +1008,11 @@ def run_model(mode='coop'):
 
     
     
-        
+
 if __name__ == "__main__":
 
 
-    # Defining options to set number of time periods, precision of optimization solver,
-    # maximal number of iterations for the optimization algorithm
-    # and the cases to be analysed when calling the script from command line.
-    # If script is run from IDE, comment out tis section and uncomment the next one.
+   
     parser = argparse.ArgumentParser()
     parser.add_argument('--T', default = 15, type = check_arg_T, help = 'Number of time periods to be considered (min = 2, max = 59)')
     parser.add_argument('--tstep', default = 10, type = check_arg_tstep, help = 'Number of years between each time period (Accepted values: 1, 2, 5, 10, 20). Remember that tstep*T <= 590.')
