@@ -3,6 +3,7 @@
 ### Запуск (кооп + нон_кооп + графики)
 
 ```bash
+cd RICE13_pyomo/
 python RICE2025_CH4.py -g
 ```
 
