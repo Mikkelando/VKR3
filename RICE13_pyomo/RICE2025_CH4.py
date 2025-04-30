@@ -1022,14 +1022,15 @@ if __name__ == "__main__":
     parser.add_argument('--nc', default = "True", type = check_bool_arg, help = 'Establish if the non-cooperative case is computed (True) or not (False): default is True')
     parser.add_argument('--coalition', default = "none", type = str, help = 'Establish which intermediate coalition (1<|S|<N) should be computed. Available options are "none", default, "all" (takes long time) and a string with desired countries-regions: US, EU, JAP, RUS, EUR, CHI, IND, MEST, AFR, LAM, OHI, OTH')
     parser.add_argument('-g','--graphs', action="store_true", help = 'use in case of graphs requierd')
+    parser.add_argument('-m','--map', action="store_true", help = 'use dashboard needed')
 
 
     args = parser.parse_args()
     print(args)
-
-    if args.coop:
+    print('ARGS: ', bool(args.coop), bool(args.nc))
+    if args.coop == 'True':
         run_model(mode='coop')
-    if args.nc:
+    if args.nc == 'True':
         run_model(mode='nc')
     run_end = datetime.datetime.now()  
 
@@ -1040,21 +1041,34 @@ if __name__ == "__main__":
         output_dir = "graphs_new"
         os.makedirs(plt_dst+output_dir, exist_ok=True)
  
-        if bool(args.coop):
+        if args.coop == 'True':
             # try:
             plot_c(plt_dst)
             print(f'[INFO] PLOTS CREATED AT {plt_dst+output_dir}')
             # except:
             #     print('[ERROR] ERROR WHILE GENERATING PLOTS FOR COOP MODE ')
-        if bool(args.nc):
+        if args.nc == 'True':
             try:
                 plot_nc(plt_dst)
                 print(f'[INFO] PLOTS CREATED AT {plt_dst+output_dir}')
             except:
                 print('[ERROR] ERROR WHILE GENERATING PLOTS FOR NON-COOP MODE ')
 
-        
-      
+    if args.map:
+        # import subprocess
+        # subprocess.call('cd Results/ && python -m http.server', shell=True)
+        import subprocess
+        import webbrowser
+        import time
+
+        # Запускаем сервер в фоновом режиме
+        subprocess.Popen('cd Results/ && python -m http.server', shell=True)
+
+        # Ждем немного, чтобы сервер успел стартовать
+        time.sleep(1)
+
+        # Открываем страницу в браузере
+        webbrowser.open('http://localhost:8000/map33.html')
 
 
     print('FINISHED at : ', run_end)
