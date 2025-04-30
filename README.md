@@ -18,3 +18,10 @@ python RICE2025_CH4.py -g --nc False
 ```bash
 python RICE2025_CH4.py -g --coop False
 ```
+
+
+### Запуск (интерактивная карта)
+
+```bash
+python RICE2025_CH4.py --coop False --nc False --map
+```
