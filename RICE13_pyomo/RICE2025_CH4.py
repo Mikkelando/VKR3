@@ -1055,16 +1055,60 @@ if __name__ == "__main__":
                 print('[ERROR] ERROR WHILE GENERATING PLOTS FOR NON-COOP MODE ')
 
     if args.map:
-        # import subprocess
-        # subprocess.call('cd Results/ && python -m http.server', shell=True)
+
+        import pandas as pd
+        import json
+        input_file = "Results/coop.xlsx"
+        output_file = "Results/coop.json"
+        def create_map_json(input_file, output_file):
+            print(f"[INFO] Reading Excel...")
+            xlsx = pd.read_excel(input_file, sheet_name=None, index_col=0)
+            print("[INFO] ✅ Done")
+
+            full_data = {}
+
+            for region, df in xlsx.items():
+                print(f"[INFO] 🛠 Extracting data for: {region}")
+                region_data = {}
+                
+                # Объединяем дубликаты по строкам (если есть) усреднением
+                df_grouped = df.groupby(df.index).mean(numeric_only=True)
+
+                for variable, row in df_grouped.iterrows():
+                    steps = {}
+                    for col, value in row.items():
+                        if pd.notnull(value):
+                            steps[str(col)] = float(value)
+                    region_data[variable] = steps
+
+                full_data[region] = region_data
+
+            print("[INFO] 💾 Saving JSON...")
+            with open(output_file, "w") as f:
+                json.dump(full_data, f, indent=2)
+
+            print(f"[INFO] ✅ Done! Saved at {output_file}")
+
+
+        try:
+            create_map_json("Results/coop.xlsx", "Results/coop.json")
+        except:
+            print('[ERROR] error while creating json for coop')
+        try:
+            create_map_json("Results/non_coop.xlsx", "Results/non_coop.json")
+        except:
+            print('[ERROR] error while creating json for coop')
+
+
+
         import subprocess
         import webbrowser
         import time
 
-        # Запускаем сервер в фоновом режиме
+        print('[INFO] STARTING SERVER...')
         subprocess.Popen('cd Results/ && python -m http.server', shell=True)
 
-        # Ждем немного, чтобы сервер успел стартовать
+
         time.sleep(1)
 
         # Открываем страницу в браузере
