@@ -261,31 +261,52 @@
 
     const riceRegions = {
       "US": ["USA"],
-      "JPN": ["JPN"],
-      "EU": ["FRA", "DEU", "ITA", "ESP", "NLD", "BEL", "AUT", "CHE", "SWE", "DNK", "FIN", "PRT", "GRC", "IRL", "LUX", "GBR", "ISL", "NOR"],
+      "JAP": ["JPN"],
+      "EU": ["FRA", "DEU", "ITA", "NLD", "BEL", "AUT", "CHE", "SWE", "DNK", "FIN", "PRT", "GRC", "IRL", "LUX", "GBR", "ISL", "NOR"],
+      "ES": ["ESP"],
       "RUS": ["RUS"],
-      "EUR": ["POL", "CZE", "SVK", "HUN", "ROU", "BGR", "HRV", "SVN", "EST", "LVA", "LTU", "UKR", "SRB", "BIH", "MKD", "MDA", "BLR", "KAZ", "ARM", "GEO", "AZE", "UZB", "TKM", "TJK", "KGZ", "MNG"],
+      "EUR": ["POL", "CZE", "SVK", "HUN", "ROU", "BGR", "HRV", "SVN", "EST", "LVA", "LTU", "UKR", "SRB", "BIH", "MKD", "MDA", "BLR", "ARM", "GEO", "AZE"],
       "CHI": ["CHN"],
       "IND": ["IND"],
       "MEST": ["SAU", "IRN", "IRQ", "SYR", "JOR", "LBN", "ISR", "TUR", "YEM", "ARE", "KWT", "QAT", "OMN", "BHR", "PSE", "AFG", "PAK"],
       "AFR": ["DZA", "AGO", "BEN", "BWA", "BFA", "BDI", "CMR", "CPV", "CAF", "TCD", "COM", "COG", "COD", "DJI", "EGY", "GNQ", "ERI", "SWZ", "ETH", "GAB", "GMB", "GHA", "GIN", "GNB", "CIV", "KEN", "LSO", "LBR", "LBY", "MDG", "MWI", "MLI", "MRT", "MUS", "MAR", "MOZ", "NAM", "NER", "NGA", "RWA", "STP", "SEN", "SYC", "SLE", "SOM", "ZAF", "SSD", "SDN", "TZA", "TGO", "TUN", "UGA", "ZMB", "ZWE", "ESH", "SML"],
       "LAM": ["BRA", "ARG", "CHL", "COL", "PER", "ECU", "BOL", "VEN", "PRY", "URY", "MEX", "CUB", "DOM", "HTI", "GTM", "HND", "SLV", "NIC", "CRI", "PAN", "SUR", "GUY", "GUF"],
       "OHI": ["CAN", "AUS", "NZL", "KOR", "SGP"],
-      "OTH": ["IDN", "THA", "MYS", "PHL", "VNM", "MMR", "KHM", "LAO", "BRN", "TLS", "PNG", "SLB", "FJI", "WSM", "TON", "VUT"]
+      "OTH": ["IDN", "THA", "MYS", "PHL","KAZ", "UZB", "TKM", "TJK", "KGZ", "MNG", "VNM", "MMR", "KHM", "LAO", "BRN", "TLS", "PNG", "SLB", "FJI", "WSM", "TON", "VUT"]
     };
 
     const regionNamesRu = {
-      "US": "USA", "JPN": "Japan", "EU": "Western Europe", "RUS": "Russia",
-    "EUR": "Eastern Europe & Central Asia", "CHI": "China", "IND": "India", "MEST": "Middle East",
-    "AFR": "Africa", "LAM": "Latin America", "OHI": "Other High-Income", "OTH": "Other Developing"
+      "US": "USA", 
+      "JAP": "Japan", 
+      "EU": "Western Europe", 
+      "ES": "Spain", 
+      "RUS": "Russia",
+      "EUR": "Eastern Europe & Central Asia", 
+      "CHI": "China", 
+      "IND": "India",
+      "MEST": "Middle East",
+      "AFR": "Africa", 
+      "LAM": "Latin America", 
+      "OHI": "Other High-Income", 
+      "OTH": "Other Developing"
     };
 
     const variableLabels = {
-      "U": "Utility", "K": "Capital Stock", "S": "Savings Rate", "I": "Investment",
-    "Q": "Gross Output", "Y": "Net Output", "mu": "mu",
-    "AB": "Abatement Costs", "D": "Climate Damage", "C": "Consumption",
-    "E_ind": "Industrial Emissions", "E_CH4_ind": "Industrial CH4 Emissions",
-    "E_tot": "Total Emissions", "E_CH4_tot": "Total CH4 Emissions"
+      "U": "Utility", 
+      "K": "Capital Stock", 
+      "S": "Savings Rate", 
+      "I": "Investment",
+      "Q": "Gross Output", 
+      "Y": "Net Output", 
+      "mu": "mu",
+      "mu_CH4": "mu_CH4",
+      "AB": "Abatement Costs", 
+      "D": "Climate Damage", 
+      "C": "Consumption",
+      "E_ind": "Industrial Emissions", 
+      "E_CH4_ind": "Industrial CH4 Emissions",
+      // "E_tot": "Total Emissions", 
+      "E_CH4_tot": "Total CH4 Emissions"
     };
 
     const map = L.map('map', {
