@@ -695,9 +695,11 @@ def run_model(mode='coop'):
     m.I = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = I_init_f)                            # Investments (= savings)
     m.Q = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = Q_init_f)                            # Gross output
     m.Y = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = Y_init_f)                            # Net output (after damages and expenditures for abatement)
-    m.mu = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0, 1), initialize = mu_init_f)            # Abatement rate (control variable)
+    m.mu = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0, 1.2), initialize = mu_init_f)            # Abatement rate (control variable)
     m.mu_CH4 = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = mu_CH4_init_f)      #CH ?
+    # m.AB = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = AB_init_f)            # Abatement costs (proportional)
     m.AB = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, bounds=(0,1), initialize = AB_init_f)            # Abatement costs (proportional)
+
     m.D = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = D_init_f)                            # Environmental damages
     m.C = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = C_init_f)                            # Consumption
     m.E_ind = pe.Var(m.mC, m.t, domain=pe.NonNegativeReals, initialize = E_ind_init_f)                    # Industrial emissions
@@ -749,12 +751,14 @@ def run_model(mode='coop'):
 
     # Net output (after abatement costs and environmental damages)
     def Y_eq(m, mC, t):
-        return m.Y[mC, t] == m.Q[mC, t] - m.D[mC, t]*m.Q[mC, t]/(1+m.D[mC, t]**tstep) - m.AB[mC, t]
+        # return m.Y[mC, t] == m.Q[mC, t] - m.D[mC, t]*m.Q[mC, t]/(1+m.D[mC, t]**tstep) - m.AB[mC, t]
+        return m.Y[mC, t] == m.Q[mC, t] - m.D[mC, t]*m.Q[mC, t]/(1+m.D[mC, t]**tstep) - m.AB[mC, t]*m.Q[mC, t]
     m.Y_eq = pe.Constraint(m.mC, m.t, rule=Y_eq)
 
     # Abatement costs as proportion of output
     def AB_eq(m, mC, t):
-        return m.AB[mC, t] == (theta1.loc[mC, t]*m.mu[mC, t]**th_2[mC])*m.Q[mC, t]
+        # return m.AB[mC, t] == (theta1.loc[mC, t]*m.mu[mC, t]**th_2[mC])*m.Q[mC, t]
+        return m.AB[mC, t] == (theta1.loc[mC, t]*m.mu[mC, t]**th_2[mC])
     m.AB_eq = pe.Constraint(m.mC, m.t, rule=AB_eq)
 
     # Environmental damages (including the ones caused by sea level rise)
@@ -775,9 +779,11 @@ def run_model(mode='coop'):
 
 
     def mu_CH4_rule(m, mC, t):
-            coeff = 0.314 # such that model.ch4_emission_control is 1 when co2_emission_control is 1.2
+            # coeff = 0.314 # such that model.ch4_emission_control is 1 when co2_emission_control is 1.2
+            coeff = 0.01 # such that model.ch4_emission_control is 1 when co2_emission_control is 1 
             # return (1 - pe.exp(-coeff * m.mu[mC, t])) / coeff
             return m.mu_CH4[mC, t] == (1 - pe.exp(-coeff * m.mu[mC, t])) / coeff
+            # return m.mu_CH4[mC, t] == min(1, m.mu[mC, t])
             # return min(1, m.mu[mC, t])
     # m.mu_CH4 = pe.Expression(m.mC, m.t, rule=mu_CH4_rule)
     m.mu_CH4_eq = pe.Constraint(m.mC, m.t, rule=mu_CH4_rule)
