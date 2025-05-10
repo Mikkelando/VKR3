@@ -31,7 +31,7 @@ def plot_comparison(region_code: str, variable: str,
     # Загрузка данных
     coop_data = pd.read_excel(coop_path, sheet_name=None, index_col=0)
     non_coop_data = pd.read_excel(non_coop_path, sheet_name=None, index_col=0)
-    
+
     # Проверка
     if region_code not in coop_data or region_code not in non_coop_data:
         raise ValueError(f"Регион '{region_code}' отсутствует в файлах.")
@@ -42,6 +42,17 @@ def plot_comparison(region_code: str, variable: str,
     coop_series = coop_data[region_code].loc[variable]
     non_coop_series = non_coop_data[region_code].loc[variable]
     years = [2015 + 10 * i for i in range(len(coop_series))]
+
+    # Ограничение по годам: только 2025–2100
+    min_year, max_year = 2025, 2100
+    filtered = [(y, c, n) for y, c, n in zip(years, coop_series, non_coop_series)
+                if min_year <= y <= max_year]
+
+    if not filtered:
+        print(f"⚠️ Нет данных в диапазоне {min_year}–{max_year} для переменной '{variable}' региона '{region_code}'.")
+        return
+
+    years, coop_series, non_coop_series = zip(*filtered)
 
     # Название оси Y
     y_label = unit_mapping.get(variable, variable)
@@ -64,7 +75,7 @@ def plot_comparison(region_code: str, variable: str,
     filepath = os.path.join(folder, f"{variable}.png")
     plt.savefig(filepath, dpi=300)
     plt.close()
-    print(f"График сохранён в: {filepath}")
+    print(f"✅ График сохранён в: {filepath}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Сравнение показателей в кооп/некооп режимах модели RICE2025-CH4")
