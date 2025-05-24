@@ -335,7 +335,7 @@ def run_model(mode='coop'):
 
     from bisect import bisect
 
-    def load_forcother(filepath='ssp/forcother_1.txt'):
+    def load_forcother(filepath='ssp/forcother_2.txt'):
         """Загружает (year, nonco2_forcing) из файла"""
         data = []
         with open(filepath, 'r') as f:

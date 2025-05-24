@@ -4,7 +4,7 @@ from ssp import ssp_ch4nat, ssp_forcother
 START_YEAR = 2015
 YEAR_STEP = 5
 SECOND_YEAR = START_YEAR + YEAR_STEP
-TOTAL_STEPS = 100
+TOTAL_STEPS = 20
 
 # Economic constants
 INITIAL_POPULATION = 7403.
@@ -96,6 +96,7 @@ def add_climate(model):
             reservoir = (reservoir + model.ch4_emissions[prev]) * METHANE_YEARLY_ATM_DECAY
         return model.ch4_reservoir[year] == reservoir
     model.ch4_dynamics = pyo.Constraint(model.years, rule=ch4_reservoir_rule)
+    
 
     def methane_forcings_rule(model, year):
         return 0.036 * (pyo.sqrt(model.ch4_reservoir[year] / 2.75) - METHANE_EQUILIBRIUM_PPB_SQRT)
@@ -151,8 +152,7 @@ def add_climate(model):
 
     def alpha_rule(model, year):
         scale = [model.alpha[year] * T_SCALE[box] for box in range(BOXES)]
-        return 35 + 0.019 * (model.cumulative_co2_emissions[year] -
-            (model.co2_reservoir[year] - EQUILIBRIUM_CONCENTRATION_GTC))\
+        return 35 + 0.019 * (model.cumulative_co2_emissions[year] - (model.co2_reservoir[year] - EQUILIBRIUM_CONCENTRATION_GTC))\
             + 4.165 * model.t_atm[year] == sum(
                 scale[box] * FRACTION[box] * (1 - pyo.exp(-100 / scale[box]))
                 for box in range(BOXES))
@@ -211,6 +211,7 @@ def construct_model(ssp_scenario):
 
     model.capital = pyo.Var(model.years, bounds=(MINIMAL_CAPITAL_TRILLIONS_USD, None))
     model.capital[START_YEAR].fix(INITIAL_CAPITAL_TRILLIONS_USD)
+
 
     def cobb_douglas_rule(model, year):
         labour_elasticity = 1. - CAPITAL_ELASTICITY
@@ -336,7 +337,9 @@ def construct_model(ssp_scenario):
         prev = year - YEAR_STEP
         return model.capital[year] == YEAR_STEP * model.investment[prev] +\
             (1. - DEPRECIATION_RATE) ** YEAR_STEP * model.capital[prev]
+    # print("BEFORE: ", model.capital.display())
     model.capital_dynamics = pyo.Constraint(model.years, rule=capital_rule)
+    # print("AFTER: ", model.capital.display())
 
     model.cpc = pyo.Var(model.years, bounds=(MINIMAL_CONSUMPTION_PER_CAPITA_USD / 1000, None))
 
@@ -353,4 +356,5 @@ def construct_model(ssp_scenario):
 
     model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
     print('MODEL CONSTRUCTED')
+   
     return model
