@@ -22,7 +22,7 @@ import argparse
 
 
 
-def run_model(mode='coop'):
+def run_model(mode='coop', ssp=2):
 
     T = args.T
     tstep = args.tstep
@@ -335,7 +335,7 @@ def run_model(mode='coop'):
 
     from bisect import bisect
 
-    def load_forcother(filepath='ssp/forcother_2.txt'):
+    def load_forcother(filepath=f'ssp/forcother_{ssp}.txt'):
         """Загружает (year, nonco2_forcing) из файла"""
         data = []
         with open(filepath, 'r') as f:
@@ -1029,15 +1029,15 @@ if __name__ == "__main__":
     parser.add_argument('--coalition', default = "none", type = str, help = 'Establish which intermediate coalition (1<|S|<N) should be computed. Available options are "none", default, "all" (takes long time) and a string with desired countries-regions: US, EU, JAP, RUS, EUR, CHI, IND, MEST, AFR, LAM, OHI, OTH')
     parser.add_argument('-g','--graphs', action="store_true", help = 'use in case of graphs requierd')
     parser.add_argument('-m','--map', action="store_true", help = 'use dashboard needed')
-
+    parser.add_argument('--ssp', default = 2, type = int, help = 'scenario of nat emissions')
 
     args = parser.parse_args()
     print(args)
     print('ARGS: ', bool(args.coop), bool(args.nc))
     if args.coop == 'True':
-        run_model(mode='coop')
+        run_model(mode='coop', ssp=args.ssp)
     if args.nc == 'True':
-        run_model(mode='nc')
+        run_model(mode='nc', ssp=args.ssp)
     run_end = datetime.datetime.now()  
 
     if args.graphs:
