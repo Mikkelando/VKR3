@@ -17,12 +17,12 @@ from Coa_analysis import c_f_dif, int_st, dif_ext, ext_st, stab_c, coa_int, \
                          coa_ext
 from openpyxl import load_workbook
 import argparse
+import os
 
 
 
 
-
-def run_model(mode='coop', ssp=2):
+def run_model(mode='coop', ssp=2, scc=False):
 
     T = args.T
     tstep = args.tstep
@@ -908,6 +908,9 @@ def run_model(mode='coop', ssp=2):
             return sum(m.U[i, j] for i in m.mC for j in m.t)
         m.obj = pe.Objective(rule=obj_eq, sense=pe.maximize) 
         
+        #add Suffix
+        m.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
+
         # Solving the optimization problem
         opt.solve(m)
 
@@ -922,6 +925,63 @@ def run_model(mode='coop', ssp=2):
         coop_dict = model_res_to_dict(m)
         # vprint(coop_dict)
         
+        if scc:
+            
+            # os.makedirs('/../ssp_results/social_cost', exist_ok=True)
+            print('\n[CALC] SCC coop \n')
+            fmt = '{:.6f}'
+            # with open('Results/social_cost/scc_coop.csv', 'w') as ch:
+            with open(f'../ssp_results/ssp{ssp}/scc_coop.csv', 'w') as ch:
+                ch.write("scc,\n")
+                ch.write(','.join(fmt.format(
+                    -1000 * m.dual[m.E_tot_eq[t]] /
+                    (0.00001 + sum(m.dual[m.C_eq[reg, t]] for reg in m.mC))
+                ) for t in m.t))
+                ch.write('\n')
+
+            print('\n[CALC] SCCH coop \n')
+            fmt = '{:.6f}'
+            with open(f'../ssp_results/ssp{ssp}/scch4_coop.csv', 'w') as ch:
+                ch.write("scch4,\n")
+                ch.write(','.join(fmt.format(
+                    -1000000 * m.dual[m.E_CH4_tot_eq[t]] /
+                    (0.00001 + sum(m.dual[m.C_eq[reg, t]] for reg in m.mC))
+                ) for t in m.t))
+                ch.write('\n')
+
+
+
+            print('\n[CALC] SCC coop for regions \n')
+            fmt = '{:.6f}'
+            # with open('Results/social_cost/scc_coop.csv', 'w') as ch:
+            with open(f'../ssp_results/ssp{ssp}/scc_coop_regions.csv', 'w') as ch:
+                for region in m.mC:
+                    ch.write(f'{region},')
+
+                    ch.write(','.join(fmt.format(
+                       ( -1000 * m.dual[m.E_ind_eq[region, t]] + eland.loc[region, t] )/
+                        (0.00001 + m.dual[m.C_eq[region, t]])
+                    ) for t in m.t))
+
+                    ch.write('\n')
+
+            
+            print('\n[CALC] SCCH coop for regions \n')
+            fmt = '{:.6f}'
+            # with open('Results/social_cost/scc_coop.csv', 'w') as ch:
+            with open(f'../ssp_results/ssp{ssp}/scch4_coop_regions.csv', 'w') as ch:
+                for region in m.mC:
+                    ch.write(f'{region},')
+
+                    ch.write(','.join(fmt.format(
+                       ( -1000 * m.dual[m.E_CH4_ind_eq[region, t]] + e_CH4_land.loc[region, t] )/
+                        (0.00001 + m.dual[m.C_eq[region, t]])
+                    ) for t in m.t))
+
+                    ch.write('\n')
+            
+             
+
         res_coop = output_format(countries, coop_dict, t, T)
 
         coop_TU = [sum(res_coop[i].loc['U',:]) for i in countries]
@@ -932,7 +992,7 @@ def run_model(mode='coop', ssp=2):
 
     elif mode =='nc':
     
-
+        m.dual = pe.Suffix(direction=pe.Suffix.IMPORT)
 
         # Resetting starting values (required only if cooperative solution has been computed)
         if coop_c == True:
@@ -995,6 +1055,61 @@ def run_model(mode='coop', ssp=2):
                                 for i in range(len(mC)) for j in range(T-1))            
             count_iter += 1
         
+
+        if scc:
+            os.makedirs('Results/social_cost', exist_ok=True)
+            print('\n[CALC] SCC non coop \n')
+            fmt = '{:.6f}'
+            with open(f'../ssp_results/ssp{ssp}/scc_noncoop.csv', 'w') as ch:
+                ch.write("scc,\n")
+                ch.write(','.join(fmt.format(
+                    -1000 * m.dual[m.E_tot_eq[t]] /
+                    (0.00001 + sum(m.dual[m.C_eq[reg, t]] for reg in m.mC))
+                ) for t in m.t))
+                ch.write('\n')
+
+            print('\n[CALC] SCCH non coop \n')
+            fmt = '{:.6f}'
+            with open(f'../ssp_results/ssp{ssp}/scch4_noncoop.csv', 'w') as ch:
+                ch.write("scch4,\n")
+                ch.write(','.join(fmt.format(
+                    -1000000 * m.dual[m.E_CH4_tot_eq[t]] /
+                    (0.00001 + sum(m.dual[m.C_eq[reg, t]] for reg in m.mC))
+                ) for t in m.t))
+                ch.write('\n')
+
+
+
+            print('\n[CALC] SCC noncoop for regions \n')
+            fmt = '{:.6f}'
+            # with open('Results/social_cost/scc_coop.csv', 'w') as ch:
+            with open(f'../ssp_results/ssp{ssp}/scc_noncoop_regions.csv', 'w') as ch:
+                for region in m.mC:
+                    ch.write(f'{region},')
+
+                    ch.write(','.join(fmt.format(
+                       ( -1000 * m.dual[m.E_ind_eq[region, t]] + eland.loc[region, t] )/
+                        (0.00001 + m.dual[m.C_eq[region, t]])
+                    ) for t in m.t))
+
+                    ch.write('\n')
+
+            
+            print('\n[CALC] SCCH noncoop for regions \n')
+            fmt = '{:.6f}'
+            # with open('Results/social_cost/scc_coop.csv', 'w') as ch:
+            with open(f'../ssp_results/ssp{ssp}/scch4_noncoop_regions.csv', 'w') as ch:
+                for region in m.mC:
+                    ch.write(f'{region},')
+
+                    ch.write(','.join(fmt.format(
+                       ( -1000 * m.dual[m.E_CH4_ind_eq[region, t]] + e_CH4_land.loc[region, t] )/
+                        (0.00001 + m.dual[m.C_eq[region, t]])
+                    ) for t in m.t))
+
+                    ch.write('\n')
+
+
         nc_dict = model_res_to_dict(m)
         
         res_nc = output_format(countries, nc_dict, t, T)
@@ -1030,14 +1145,16 @@ if __name__ == "__main__":
     parser.add_argument('-g','--graphs', action="store_true", help = 'use in case of graphs requierd')
     parser.add_argument('-m','--map', action="store_true", help = 'use dashboard needed')
     parser.add_argument('--ssp', default = 2, type = int, help = 'scenario of nat emissions')
+    parser.add_argument('-scc','--scc', action="store_true", help = 'calculate scc/scch4')
+
 
     args = parser.parse_args()
     print(args)
     print('ARGS: ', bool(args.coop), bool(args.nc))
     if args.coop == 'True':
-        run_model(mode='coop', ssp=args.ssp)
+        run_model(mode='coop', ssp=args.ssp, scc=args.scc)
     if args.nc == 'True':
-        run_model(mode='nc', ssp=args.ssp)
+        run_model(mode='nc', ssp=args.ssp, scc=args.scc)
     run_end = datetime.datetime.now()  
 
     if args.graphs:

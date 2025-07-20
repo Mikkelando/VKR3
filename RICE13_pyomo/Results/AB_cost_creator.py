@@ -68,7 +68,7 @@ def plot_comparison(region_code: str,
     years, coop_series, non_coop_series = zip(*filtered)
 
     # Название оси Y
-    y_label = unit_mapping.get('AB Cost (Trillion $)', 'Damage Cost (Trillion $)')
+    y_label = unit_mapping.get('AB Cost (Trillion $)', 'AB Cost (Trillion $)')
 
     # Создание папки
     folder = os.path.join(output_dir, region_code)
@@ -78,7 +78,7 @@ def plot_comparison(region_code: str,
     plt.figure(figsize=(10, 5))
     plt.plot(years, coop_series, label='Cooperative', linewidth=2)
     plt.plot(years, non_coop_series, label='Non-Cooperative', linewidth=2, linestyle='--')
-    plt.title(f"AB — {region_code}")
+    plt.title(f"AB Cost — {region_code}")
     plt.xlabel("Year")
     plt.ylabel(y_label)
     plt.legend()
