@@ -47,6 +47,9 @@ def plot_scc_or_scch4(data_dict, years, var_name, save_path):
     plt.ylabel(ylabel, fontsize=16)
 
     for scenario, values in data_dict.items():
+        # if 'non' in scenario:
+        #     print('skipped')
+        # else:
         color, alpha = get_color_alpha(scenario)
         base_scenario = get_legend(scenario)
         label = base_scenario + (' (noncoop)' if 'non' in scenario else ' (coop)')
@@ -114,8 +117,10 @@ def process_aggregated_data():
 def process_region_files():
     base_dir = Path("ssp_results")
     ssp_list = ['ssp1', 'ssp2', 'ssp3', 'ssp4', 'ssp5']
-    suffixes = ['scc_coop_regions.csv', 'scc_noncoop_regions.csv',
-                'scch4_coop_regions.csv', 'scch4_noncoop_regions.csv']
+    # suffixes = ['scc_coop_regions.csv', 'scc_noncoop_regions.csv',
+    #             'scch4_coop_regions.csv', 'scch4_noncoop_regions.csv']
+    
+    suffixes = ['scc_coop_regions.csv', 'scch4_coop_regions.csv']
 
     region_data_scc = {}
     region_data_scch4 = {}

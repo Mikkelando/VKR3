@@ -958,8 +958,13 @@ def run_model(mode='coop', ssp=2, scc=False):
                 for region in m.mC:
                     ch.write(f'{region},')
 
+                    # ch.write(','.join(fmt.format(
+                    #    ( -1000 * m.dual[m.E_ind_eq[region, t]] + eland.loc[region, t] )/
+                    #     (0.00001 + m.dual[m.C_eq[region, t]])
+                    # ) for t in m.t))
+
                     ch.write(','.join(fmt.format(
-                       ( -1000 * m.dual[m.E_ind_eq[region, t]] + eland.loc[region, t] )/
+                       ( -1000 * m.dual[m.E_ind_eq[region, t]]  )/
                         (0.00001 + m.dual[m.C_eq[region, t]])
                     ) for t in m.t))
 
@@ -1087,8 +1092,13 @@ def run_model(mode='coop', ssp=2, scc=False):
                 for region in m.mC:
                     ch.write(f'{region},')
 
+                    # ch.write(','.join(fmt.format(
+                    #    ( -1000 * m.dual[m.E_ind_eq[region, t]] + eland.loc[region, t] )/
+                    #     (0.00001 + m.dual[m.C_eq[region, t]])
+                    # ) for t in m.t))
+
                     ch.write(','.join(fmt.format(
-                       ( -1000 * m.dual[m.E_ind_eq[region, t]] + eland.loc[region, t] )/
+                       ( -1000 * m.dual[m.E_ind_eq[region, t]])/
                         (0.00001 + m.dual[m.C_eq[region, t]])
                     ) for t in m.t))
 
